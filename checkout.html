@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>الدفع</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+ <!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet" />
+
+<style>
+  /* الخط العام */
+  body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #f6faf5;
+    color: #333;
+    padding: 20px;
+    direction: rtl;
+  }
+
+  /* Navbar */
+  nav.navbar {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: #ffffff;
+    border-radius: 8px;
+  }
+  nav.navbar .navbar-brand {
+    font-weight: 700;
+    color: #2d5d34;
+    font-size: 1.6rem;
+  }
+  nav.navbar .btn-primary {
+    background: linear-gradient(135deg, #4caf50, #388e3c);
+    border: none;
+    font-weight: 600;
+  }
+  nav.navbar .btn-primary:hover {
+    background: linear-gradient(135deg, #388e3c, #2d5d34);
+  }
+
+  /* Cards */
+  .card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,128,0,0.08);
+    transition: transform 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,128,0,0.12);
+  }
+  .card .card-body {
+    display: flex;
+    flex-direction: column;
+  }
+  .card .card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2d5d34;
+  }
+  .card .card-text {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 12px;
+  }
+  .card img {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    object-fit: cover;
+    height: 220px;
+  }
+
+  /* Buttons */
+  button.btn, .btn {
+    border-radius: 50px;
+    padding: 10px 25px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    transition: all 0.3s ease;
+  }
+  button.btn-success {
+    background: linear-gradient(135deg, #4caf50, #388e3c);
+    border: none;
+    color: white;
+  }
+  button.btn-success:hover {
+    background: linear-gradient(135deg, #388e3c, #2d5d34);
+  }
+  button.btn-danger {
+    background: linear-gradient(135deg, #e53935, #c62828);
+    border: none;
+    color: white;
+  }
+  button.btn-danger:hover {
+    background: linear-gradient(135deg, #c62828, #b71c1c);
+  }
+  button.btn-outline-secondary {
+    border-radius: 12px;
+    color: #555;
+    border-color: #555;
+  }
+  button.btn-outline-secondary:hover {
+    background-color: #388e3c;
+    color: #fff;
+    border-color: #388e3c;
+  }
+
+  /* Inputs الكمية */
+  .input-group input.form-control {
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+    border-color: #a5d6a7;
+  }
+
+  /* العناوين */
+  h2 {
+    font-weight: 800;
+    color: #2d5d34;
+    margin-bottom: 25px;
+    text-align: center;
+  }
+
+  /* Container */
+  .container {
+    max-width: 1100px;
+    margin: auto;
+  }
+
+  /* رسالة تنبيه */
+  .alert {
+    max-width: 600px;
+    margin: 20px auto;
+  }
+
+  /* paypal زر الدفع */
+  .paypal-button-container {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+  }
+</style>
+
+
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+  <div class="container">
+    <a class="navbar-brand" href="products.html">متجري</a>
+    <a href="cart.html" class="btn btn-primary">عودة للعربة</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h2 class="mb-4 text-center">بيانات الدفع</h2>
+  <form id="checkout-form" style="max-width: 600px; margin:auto;">
+    <div class="mb-3">
+      <label for="name" class="form-label">الاسم الكامل</label>
+      <input type="text" class="form-control" id="name" required />
+    </div>
+    <div class="mb-3">
+      <label for="email" class="form-label">البريد الإلكتروني</label>
+      <input type="email" class="form-control" id="email" required />
+    </div>
+    <div class="mb-3">
+      <label for="address" class="form-label">العنوان</label>
+      <textarea class="form-control" id="address" rows="3" required></textarea>
+    </div>
+    <div class="d-grid gap-2">
+      <button type="submit" id="confirm-btn" class="btn btn-success">تأكيد الدفع</button>
+    </div>
+  </form>
+
+  <div class="paypal-button-container" id="paypal-button-container" style="display:none;"></div>
+</div>
+
+<script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script> 
+<!-- "sb" هو معرف بيئة Sandbox للتجربة فقط، يمكنك تغييره إلى client-id الخاص بك عند الانتقال إلى الإنتاج -->
+
+<script>
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+  function calculateTotalUSD() {
+    // نفترض سعر ثابت التحويل 1 ريال = 0.27 دولار (يمكن تعديلها حسب السوق)
+    const conversionRate = 0.27;
+    const totalSAR = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    return (totalSAR * conversionRate).toFixed(2);
+  }
+
+  // عند تأكيد نموذج الدفع، نخفي الزر ونظهر زر PayPal
+  document.getElementById('checkout-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    if (cart.length === 0) {
+      alert('عربة التسوق فارغة.');
+      return;
+    }
+
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const address = document.getElementById('address').value.trim();
+
+    if (!name || !email || !address) {
+      alert('يرجى ملء جميع الحقول');
+      return;
+    }
+
+    // إخفاء زر تأكيد الدفع
+    document.getElementById('confirm-btn').style.display = 'none';
+    // إخفاء النموذج (اختياري)
+    // document.getElementById('checkout-form').style.display = 'none';
+
+    // إظهار زر PayPal
+    document.getElementById('paypal-button-container').style.display = 'flex';
+  });
+
+  paypal.Buttons({
+    createOrder: function(data, actions) {
+      const totalUSD = calculateTotalUSD();
+      return actions.order.create({
+        purchase_units: [{
+          amount: {
+            value: totalUSD
+          },
+          description: `شراء من متجري - إجمالي ${totalUSD} دولار`
+        }]
+      });
+    },
+    onApprove: function(data, actions) {
+      return actions.order.capture().then(function(details) {
+        alert(`شكراً لك ${details.payer.name.given_name}، تم إتمام الدفع بنجاح!`);
+        // تفريغ العربة
+        localStorage.removeItem('cart');
+        // تحويل لصفحة المنتجات أو صفحة شكر
+        window.location.href = 'products.html';
+      });
+    },
+    onError: function(err) {
+      alert('حدث خطأ أثناء الدفع، يرجى المحاولة لاحقاً.');
+      console.error(err);
+    }
+  }).render('#paypal-button-container');
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

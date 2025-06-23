@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>منتجات</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+ <!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet" />
+
+<style>
+  /* الخط العام */
+  body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #f6faf5;
+    color: #333;
+    padding: 20px;
+    direction: rtl;
+  }
+
+  /* Navbar */
+  nav.navbar {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: #ffffff;
+    border-radius: 8px;
+  }
+  nav.navbar .navbar-brand {
+    font-weight: 700;
+    color: #2d5d34;
+    font-size: 1.6rem;
+  }
+  nav.navbar .btn-primary {
+    background: linear-gradient(135deg, #4caf50, #388e3c);
+    border: none;
+    font-weight: 600;
+  }
+  nav.navbar .btn-primary:hover {
+    background: linear-gradient(135deg, #388e3c, #2d5d34);
+  }
+
+  /* Cards */
+  .card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,128,0,0.08);
+    transition: transform 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,128,0,0.12);
+  }
+  .card .card-body {
+    display: flex;
+    flex-direction: column;
+  }
+  .card .card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2d5d34;
+  }
+  .card .card-text {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 12px;
+  }
+  .card img {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    object-fit: cover;
+    height: 220px;
+  }
+
+  /* Buttons */
+  button.btn, .btn {
+    border-radius: 50px;
+    padding: 10px 25px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    transition: all 0.3s ease;
+  }
+  button.btn-success {
+    background: linear-gradient(135deg, #4caf50, #388e3c);
+    border: none;
+    color: white;
+  }
+  button.btn-success:hover {
+    background: linear-gradient(135deg, #388e3c, #2d5d34);
+  }
+  button.btn-danger {
+    background: linear-gradient(135deg, #e53935, #c62828);
+    border: none;
+    color: white;
+  }
+  button.btn-danger:hover {
+    background: linear-gradient(135deg, #c62828, #b71c1c);
+  }
+  button.btn-outline-secondary {
+    border-radius: 12px;
+    color: #555;
+    border-color: #555;
+  }
+  button.btn-outline-secondary:hover {
+    background-color: #388e3c;
+    color: #fff;
+    border-color: #388e3c;
+  }
+
+  /* Inputs الكمية */
+  .input-group input.form-control {
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+    border-color: #a5d6a7;
+  }
+
+  /* العناوين */
+  h2 {
+    font-weight: 800;
+    color: #2d5d34;
+    margin-bottom: 25px;
+    text-align: center;
+  }
+
+  /* Container */
+  .container {
+    max-width: 1100px;
+    margin: auto;
+  }
+
+  /* رسالة تنبيه */
+  .alert {
+    max-width: 600px;
+    margin: 20px auto;
+  }
+
+  /* paypal زر الدفع */
+  .paypal-button-container {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+  }
+</style>
+
+
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+  <div class="container">
+    <a class="navbar-brand" href="#">متجر جنات</a>
+    <div>
+      <a href="cart.html" class="btn btn-primary">عربة التسوق <span id="cart-count" class="badge bg-danger">0</span></a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row" id="products-container">
+    <!-- المنتجات تظهر هنا -->
+  </div>
+</div>
+
+<script>
+  // بيانات المنتجات
+  const products = [
+    { id: 1, name: "منتج 1", price: 100, img: "pics/MacBook.jfif" },
+    { id: 2, name: "منتج 2", price: 150, img: "pics/play.jfif"},
+    { id: 3, name: "منتج 3", price: 200, img: "pics/ipad.jfif" },
+    { id: 4, name: "منتج 4", price: 250, img: "pics/camera.jfif" },
+  ];
+
+  // استرجاع العربة من localStorage أو إنشاء جديدة
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+  // تحديث عداد العربة في أعلى الصفحة
+  function updateCartCount() {
+    const count = cart.reduce((acc, item) => acc + item.quantity, 0);
+    document.getElementById('cart-count').textContent = count;
+  }
+
+  function addToCart(id) {
+    const product = products.find(p => p.id === id);
+    const existingItem = cart.find(item => item.id === id);
+
+    if (existingItem) {
+      existingItem.quantity++;
+    } else {
+      cart.push({ ...product, quantity: 1 });
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    alert(`تمت إضافة "${product.name}" إلى عربة التسوق`);
+  }
+
+  function renderProducts() {
+    const container = document.getElementById('products-container');
+    container.innerHTML = '';
+    products.forEach(product => {
+      const col = document.createElement('div');
+      col.className = 'col-md-3 mb-4';
+
+      col.innerHTML = `
+        <div class="card product-card">
+          <img src="${product.img}" class="card-img-top" alt="${product.name}" />
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">${product.name}</h5>
+            <p class="card-text">السعر: ${product.price} دينار عراقي</p>
+            <button class="btn btn-success mt-auto" onclick="addToCart(${product.id})">أضف إلى العربة</button>
+          </div>
+        </div>
+      `;
+
+      container.appendChild(col);
+    });
+  }
+
+  // بداية تنفيذ الكود
+  renderProducts();
+  updateCartCount();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

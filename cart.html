@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>عربة التسوق</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+ <!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet" />
+
+<style>
+  /* الخط العام */
+  body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #f6faf5;
+    color: #333;
+    padding: 20px;
+    direction: rtl;
+  }
+
+  /* Navbar */
+  nav.navbar {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: #ffffff;
+    border-radius: 8px;
+  }
+  nav.navbar .navbar-brand {
+    font-weight: 700;
+    color: #2d5d34;
+    font-size: 1.6rem;
+  }
+  nav.navbar .btn-primary {
+    background: linear-gradient(135deg, #4caf50, #388e3c);
+    border: none;
+    font-weight: 600;
+  }
+  nav.navbar .btn-primary:hover {
+    background: linear-gradient(135deg, #388e3c, #2d5d34);
+  }
+
+  /* Cards */
+  .card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,128,0,0.08);
+    transition: transform 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,128,0,0.12);
+  }
+  .card .card-body {
+    display: flex;
+    flex-direction: column;
+  }
+  .card .card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2d5d34;
+  }
+  .card .card-text {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 12px;
+  }
+  .card img {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    object-fit: cover;
+    height: 220px;
+  }
+
+  /* Buttons */
+  button.btn, .btn {
+    border-radius: 50px;
+    padding: 10px 25px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    transition: all 0.3s ease;
+  }
+  button.btn-success {
+    background: linear-gradient(135deg, #4caf50, #388e3c);
+    border: none;
+    color: white;
+  }
+  button.btn-success:hover {
+    background: linear-gradient(135deg, #388e3c, #2d5d34);
+  }
+  button.btn-danger {
+    background: linear-gradient(135deg, #e53935, #c62828);
+    border: none;
+    color: white;
+  }
+  button.btn-danger:hover {
+    background: linear-gradient(135deg, #c62828, #b71c1c);
+  }
+  button.btn-outline-secondary {
+    border-radius: 12px;
+    color: #555;
+    border-color: #555;
+  }
+  button.btn-outline-secondary:hover {
+    background-color: #388e3c;
+    color: #fff;
+    border-color: #388e3c;
+  }
+
+  /* Inputs الكمية */
+  .input-group input.form-control {
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+    border-color: #a5d6a7;
+  }
+
+  /* العناوين */
+  h2 {
+    font-weight: 800;
+    color: #2d5d34;
+    margin-bottom: 25px;
+    text-align: center;
+  }
+
+  /* Container */
+  .container {
+    max-width: 1100px;
+    margin: auto;
+  }
+
+  /* رسالة تنبيه */
+  .alert {
+    max-width: 600px;
+    margin: 20px auto;
+  }
+
+  /* paypal زر الدفع */
+  .paypal-button-container {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+  }
+</style>
+
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+  <div class="container">
+    <a class="navbar-brand" href="index.html">متجري</a>
+    <div>
+      <a href="checkout.html" class="btn btn-primary">إتمام الشراء</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <h2 class="mb-4">عربة التسوق</h2>
+  <div id="cart-items"></div>
+
+  <div class="mt-4 text-end">
+    <h4>الإجمالي: <span id="total-price">0</span> ريال</h4>
+  </div>
+
+  <div class="mt-4">
+    <button class="btn btn-danger" onclick="clearCart()">تفريغ العربة</button>
+  </div>
+</div>
+
+<script>
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+  function saveCart() {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }
+
+  function renderCart() {
+    const container = document.getElementById('cart-items');
+    container.innerHTML = '';
+
+    if (cart.length === 0) {
+      container.innerHTML = '<p>عربة التسوق فارغة.</p>';
+      document.getElementById('total-price').textContent = '0';
+      return;
+    }
+
+    cart.forEach((item, index) => {
+      const div = document.createElement('div');
+      div.className = 'card mb-3 p-3';
+
+      div.innerHTML = `
+        <div class="d-flex align-items-center justify-content-between">
+          <img src="${item.img}" alt="${item.name}" style="width: 80px; height: 80px; object-fit: cover;" />
+          <div class="flex-grow-1 mx-3">
+            <h5>${item.name}</h5>
+            <p>السعر: ${item.price} دينار عراقي</p>
+            <div class="input-group" style="width: 120px;">
+              <button class="btn btn-outline-secondary" onclick="changeQuantity(${index}, -1)">-</button>
+              <input type="text" class="form-control text-center" value="${item.quantity}" readonly />
+              <button class="btn btn-outline-secondary" onclick="changeQuantity(${index}, 1)">+</button>
+            </div>
+          </div>
+          <button class="btn btn-danger" onclick="removeItem(${index})">حذف</button>
+        </div>
+      `;
+
+      container.appendChild(div);
+    });
+
+    updateTotal();
+  }
+
+  function changeQuantity(index, delta) {
+    cart[index].quantity += delta;
+    if (cart[index].quantity < 1) cart[index].quantity = 1;
+    saveCart();
+    renderCart();
+  }
+
+  function removeItem(index) {
+    if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
+      cart.splice(index, 1);
+      saveCart();
+      renderCart();
+    }
+  }
+
+  function updateTotal() {
+    const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    document.getElementById('total-price').textContent = total;
+  }
+
+  function clearCart() {
+    if (confirm('هل تريد تفريغ عربة التسوق بالكامل؟')) {
+      cart = [];
+      saveCart();
+      renderCart();
+    }
+  }
+
+  renderCart();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
